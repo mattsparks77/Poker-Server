@@ -19,7 +19,11 @@ public class Player : MonoBehaviour
 
     public int chipTotal = 1000;
 
+    
+    public Hand hand;
+
     public Card[] cards;
+    public static List<Card> totalCards = new List<Card>();
 
     public CharacterController controller;
     public Transform shootOrigin;
@@ -43,6 +47,9 @@ public class Player : MonoBehaviour
         id = _id;
         username = _username;
         cards = new Card[2];
+        hand = new Hand();
+        hand.InitStart();
+
 
         inputs = new bool[5];
     }

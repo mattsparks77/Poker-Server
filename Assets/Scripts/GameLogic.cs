@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-class GameLogic
+class GameLogic: MonoBehaviour
 {
     public static int currentBet = 0;
     public static int amountInPot = 0;
+    public static int highestPlayerAmountInPot = 0;
 
     public static int currentTurnIndex = 0;
 
@@ -33,7 +35,7 @@ class GameLogic
 
     public static void InitializePlayers()
     {
-        for (int i = 0; i < Server.clients.Count; i++) playersInGame.Add(null);
+        for (int i = 0; i < Server.clients.Count - 1; i++) playersInGame.Add(null);
     }
 
     /// <summary>
@@ -41,6 +43,7 @@ class GameLogic
     /// </summary>
     public static void ResetTable()
     {
+        
         roundStarted = false;
         playersInGame.Clear();
         dealCounter = 0;
@@ -55,14 +58,31 @@ class GameLogic
     {
 
     }
-
+    /// <summary>
+    /// Gathers player indexes
+    /// </summary>
+    public static void GatherPlayers()
+    {
+        foreach (Client c in Server.clients.Values)
+        {
+            if (c.player != null && c.player.tableIndex > -1)
+            {
+                Debug.Log($"Server data: {c.player.username} => Chip Total: {c.player.chipTotal} Table Index: {c.player.tableIndex}");
+                playersInGame[c.player.tableIndex] = c.player;
+                c.player.isPlayingHand = true;
+            }
+        }
+    }
 
     public static void RemoveNullPlayers()
     {
         playersInGame.RemoveAll(item => item == null);
+        Debug.Log($"Number of players in game: {playersInGame.Count}");
         //sets each players table index to their new index in the shrunken list of players after removing the null players.
-        for (int i = 0; i < playersInGame.Count - 1; i++)
+        for (int i = 0; i < playersInGame.Count; i++)
         {
+
+            Server.clients[playersInGame[i].id].player.tableIndex = i;
             playersInGame[i].tableIndex = i;
             ServerSend.PlayerTablePosition(playersInGame[i].id, i);
 
@@ -98,7 +118,6 @@ class GameLogic
 
     }
 
-
     public static bool CheckPlayersAllBetEqual()
     {
         int prev = playersInGame[0].amountInPot;
@@ -132,19 +151,12 @@ class GameLogic
         //    ServerSend.PokerState();
         //    return;
         //}
-        if (currentTurnIndex == tableIndex)
-        {
-            ServerSend.PlayerAction(playersInGame[tableIndex]); // sends player action to all other clients if its their turn.
-            //ServerSend.PlayerAction(Server.clients[id].player); // this one works but gets player from clients list instead of in game
-            IncrementPlayerTurn();
 
-
-        }
         // checks if theres only one player left
         if (playersLeft <= 1)
         {
             CalculateWinner();
-            ServerSend.PlayerAction(playersInGame[tableIndex]); // sends player action to all other clients.
+            //ServerSend.PlayerAction(playersInGame[tableIndex]); // sends player action to all other clients.
             ServerSend.PokerState();
 
             return;
@@ -162,6 +174,8 @@ class GameLogic
                 dealCounter++;
                 ResetPlayerActions();
                 currentBet = 0;
+                ServerSend.PokerState();
+
 
 
             }
@@ -171,6 +185,8 @@ class GameLogic
                 dealCounter++;
                 ResetPlayerActions();
                 currentBet = 0;
+                ServerSend.PokerState();
+
 
 
             }
@@ -180,11 +196,23 @@ class GameLogic
                 dealCounter++;
                 ResetPlayerActions();
                 currentBet = 0;
+                ServerSend.PokerState();
             }
         }
 
-    }
+        //incorrect fix
+        if (currentTurnIndex == tableIndex)
+        {
+            ServerSend.PlayerAction(playersInGame[tableIndex]); // sends player action to all other clients if its their turn.
+            //ServerSend.PlayerAction(Server.clients[id].player); // this one works but gets player from clients list instead of in game
+            IncrementPlayerTurn();
 
+
+        }
+        //ServerSend.PokerState();
+
+
+    }
 
     public static void ResetPlayerActions()
     {
@@ -209,7 +237,6 @@ class GameLogic
         ServerSend.PokerState();
     }
 
-
     public static void StartRound()
     {
         currentBet = 0;
@@ -233,8 +260,8 @@ class GameLogic
             currentTurnIndex = 0;
         }
 
-        //SubtractBigSmallBlinds();
-
+        SubtractBigSmallBlinds();
+        highestPlayerAmountInPot = bigBlind;
         Deck.CreateDeck();
         Deck.Shuffle();
 
@@ -245,60 +272,76 @@ class GameLogic
 
     }
 
-    public static void GatherPlayers()
-    {
-        foreach (Client c in Server.clients.Values)
-        {
-            if (c.player != null && c.player.tableIndex > -1)
-            {
-                Debug.Log($"Table Index: {c.player.tableIndex}");
-                playersInGame[c.player.tableIndex] = c.player;
-                c.player.isPlayingHand = true;
-            }
-        }
-    }
 
-    public static void CalculateWinner()
+
+    public static void NewRound()
     {
-        //Do winner calculations for chips and adding chips. will have to make an add chips packet
         ServerSend.RoundReset();
         ResetTable();
         dealerIndex++;
-        if (dealerIndex > playersInGame.Count)
+        IncrementDealer();
+    }
+
+
+    public static void CalculateWinner()
+    {
+
+        //Do winner calculations for chips and adding chips. SetChips packet made.
+        foreach (Player p in playersInGame)
+        {
+            List<Card> allCards = new List<Card>();
+            allCards.AddRange(p.cards);
+            allCards.AddRange(communityCards);
+            p.hand = new Hand(allCards);
+            p.hand.CalculateRanks();
+            p.hand.handInfo.PrintRanks();
+            p.hand.PrintCards(allCards);
+        }
+        NewRound();
+    }
+
+    public static void IncrementDealer()
+    {
+        dealerIndex++;
+        if (dealerIndex > playersInGame.Count - 1)
         {
             dealerIndex = 0;
         }
     }
 
-    public void AdvanceNextRound()
-    {
 
-        roundStarted = false;
-    }
-
-    public void ReceivePlayerAction()
-    {
-
-    }
-
-    public void SendUpdatedGameState()
-    {
-
-    }
     /// <summary>
-    /// Subtracts the big and small blinds from the appropriate indexes. 
+    /// Subtracts the big and small blinds from the appropriate indexes. Needs to be fixed.
     /// </summary>
     public static void SubtractBigSmallBlinds()
     {
-        int smallIndex = dealerIndex + 1;
-        int bigIndex = dealerIndex + 2;
-        if (bigIndex > playersInGame.Count)
+        int smallIndex = dealerIndex;
+        int bigIndex = dealerIndex + 1;
+        if (bigIndex > playersInGame.Count - 1)
         {
-            bigIndex = dealerIndex;
+            bigIndex = 0;
         }
         // need to add a check for single player
-        ServerSend.SetChips(playersInGame[smallIndex].id, _subtractAmount: smallBlind);
-        ServerSend.SetChips(playersInGame[bigIndex].id, _subtractAmount: bigBlind);
+        if (playersInGame[smallIndex].chipTotal < bigBlind)
+        {
+            playersInGame.RemoveAt(smallIndex);
+        }
+        if (playersInGame[bigIndex].chipTotal < bigBlind)
+        {
+            playersInGame.RemoveAt(bigIndex);
+            currentBet = 0;
+        }
+        else
+        {
+            ServerSend.SetChips(playersInGame[smallIndex].id, _subtractAmount: smallBlind, _isBlinds: true);
+            ServerSend.SetChips(playersInGame[bigIndex].id, _subtractAmount: bigBlind, _isBlinds: true);
+
+            playersInGame[smallIndex].amountInPot = smallBlind;
+            playersInGame[bigIndex].amountInPot = bigBlind;
+            currentBet = bigBlind;
+            amountInPot += bigBlind + smallBlind;
+        }
+
     }
 
     public static void RemovePlayer(Player p)

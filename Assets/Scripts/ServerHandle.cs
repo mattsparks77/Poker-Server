@@ -56,23 +56,24 @@ public class ServerHandle
         int _tableIndex = _packet.ReadInt();
         
         //If clients removes himself from the table then -1 is sent and client is removed from playersInGameList.
-        if (_tableIndex == -1)
-        {
-            Debug.Log("Removing player?");
-            Server.clients[_fromClient].player.tableIndex = -1;
-            GameLogic.playersInGame.Remove(Server.clients[_fromClient].player);
-            GameLogic.numPlayersAtTable -= 1;
+        //if (_tableIndex == -1)
+        //{
+        //    Debug.Log("Removing player?");
+        //    Server.clients[_id].player.tableIndex = -1;
+        //    GameLogic.playersInGame.Remove(Server.clients[_id].player);
+        //    GameLogic.numPlayersAtTable -= 1;
 
-            return;
+        //    return;
 
-        }
+        //}
         // Adds player into the playersInGameList and sets player to have the selected index.
-        if (Server.clients[_fromClient].player == null) { return; }
+        //if (Server.clients[_id].player == null) { return; }
             
-        Server.clients[_fromClient].player.tableIndex = _tableIndex;
-        GameLogic.playersInGame[_tableIndex] = Server.clients[_fromClient].player;
+        Server.clients[_id].player.tableIndex = _tableIndex;
+        //GameLogic.playersInGame[_tableIndex] = Server.clients[_fromClient].player;
+        //GameLogic.playersInGame[_tableIndex].tableIndex = _tableIndex;
         GameLogic.numPlayersAtTable += 1;
-        ServerSend.PlayerTablePosition(_id, Server.clients[_fromClient].player.tableIndex);
+        ServerSend.PlayerTablePosition(_id, Server.clients[_id].player.tableIndex);
         
     }
 
@@ -98,20 +99,33 @@ public class ServerHandle
         }
         else if (isCheckCall)
         {
-            Server.clients[_fromClient].player.SubtractChips(GameLogic.currentBet);
-            Server.clients[_fromClient].player.amountInPot += GameLogic.currentBet;
+            int amountToCall = 0;
+            amountToCall = GameLogic.highestPlayerAmountInPot - Server.clients[_fromClient].player.amountInPot;
+
+            //if (GameLogic.currentBet != 0)
+            //{
+            //    amountToCall = GameLogic.highestPlayerAmountInPot - Server.clients[_fromClient].player.amountInPot;
+            //}
+    
+            Server.clients[_fromClient].player.SubtractChips(amountToCall);
+            Server.clients[_fromClient].player.amountInPot += amountToCall;
+            GameLogic.amountInPot += amountToCall;
+
+
         }
         else if (isRaise)
         {
             Debug.Log($"Raise Amount: {raiseAmount}");
             Server.clients[_fromClient].player.SubtractChips(raiseAmount);
             Server.clients[_fromClient].player.amountInPot += raiseAmount;
-            GameLogic.currentBet = raiseAmount;
+           
             GameLogic.amountInPot += raiseAmount;
+            GameLogic.highestPlayerAmountInPot = Server.clients[_fromClient].player.amountInPot;
+            GameLogic.currentBet = GameLogic.highestPlayerAmountInPot;
         }
       
         GameLogic.OnPlayerAction(_fromClient, Server.clients[_fromClient].player.tableIndex);
-        Debug.Log($"Player now has: {Server.clients[_fromClient].player.chipTotal}");
+        Debug.Log($"Player {Server.clients[_fromClient].player.username} has: {Server.clients[_fromClient].player.chipTotal}");
 
         //To Do Increment Game Turn to next player. 
         //

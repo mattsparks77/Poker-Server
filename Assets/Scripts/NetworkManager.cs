@@ -29,6 +29,23 @@ public class NetworkManager : MonoBehaviour
         Server.Start(9, 26950);
     }
 
+    public void StartNewRoundWithDelay(float delay)
+    {
+        StartCoroutine(NewRound(delay));
+    }
+
+    public IEnumerator NewRound(float delay)
+    {
+        ServerSend.RoundReset();
+        GameLogic.ResetTable();
+        GameLogic.dealerIndex++;
+        if (GameLogic.dealerIndex > GameLogic.playersInGame.Count)
+        {
+            GameLogic.dealerIndex = 0;
+        }
+        yield return new WaitForSeconds(delay);
+    }
+
     private void OnApplicationQuit()
     {
         Server.Stop();

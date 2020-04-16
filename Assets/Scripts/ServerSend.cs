@@ -163,7 +163,7 @@ public class ServerSend
         }
     }
 
-    public static void SetChips(int _id, int _setAmount = 0, int _subtractAmount = 0, int _addAmount = 0)
+    public static void SetChips(int _id, int _setAmount = 0, int _subtractAmount = 0, int _addAmount = 0, bool _isBlinds = false)
     {
         using (Packet _packet = new Packet((int)ServerPackets.setChips))
         {
@@ -171,6 +171,7 @@ public class ServerSend
             _packet.Write(_setAmount);
             _packet.Write(_subtractAmount);
             _packet.Write(_addAmount);
+            _packet.Write(_isBlinds);
 
 
             SendTCPDataToAll(_packet);
@@ -182,9 +183,9 @@ public class ServerSend
     {
         using (Packet _packet = new Packet((int)ServerPackets.sendCard))
         {
-            Debug.Log($"Card: Suit: {_card.suit} Rank: {_card.rank}");
+           // Debug.Log($"Card: Suit: {_card.suit} Rank: {_card.rank}");
             _packet.Write(_playerId);
-            Debug.Log($"Sending card to ID: {_playerId}");
+
 
             _packet.Write((int)_card.suit);
             _packet.Write((int)_card.rank);
@@ -235,6 +236,9 @@ public class ServerSend
             _packet.Write(GameLogic.currentBet);
             _packet.Write(GameLogic.amountInPot);
             _packet.Write(GameLogic.currentTurnIndex);
+            _packet.Write(GameLogic.playersInGame[GameLogic.currentTurnIndex].id);
+
+            _packet.Write(GameLogic.highestPlayerAmountInPot);
 
 
 
