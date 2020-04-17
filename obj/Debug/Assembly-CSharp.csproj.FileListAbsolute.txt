@@ -1,0 +1,2 @@
+C:\Users\Matt\Documents\Unity Projects\UnityGameServer\Poker-Server\obj\Debug\Assembly-CSharp.csprojAssemblyReference.cache
+C:\Users\Matt\Documents\Unity Projects\UnityGameServer\Poker-Server\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache

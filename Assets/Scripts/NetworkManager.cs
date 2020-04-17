@@ -1,12 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager instance;
 
     public GameObject playerPrefab;
+    public Text _setText;
+    public int _setAmount { get { return int.Parse(_setText.text); } set { _setAmount = int.Parse(_setText.text); } }
 
     private void Awake()
     {
@@ -19,6 +22,40 @@ public class NetworkManager : MonoBehaviour
             Debug.Log("Instance already exists, destroying object!");
             Destroy(this);
         }
+    }
+    /// <summary>
+    /// Sets player chips using the text input field
+    /// </summary>
+    public void SetPlayerChips()
+    {
+        foreach (Client c in Server.clients.Values)
+        {
+            Debug.Log($"SET AMOUNT TEXT ${_setAmount}");
+            if (c != null && c.player != null)
+            {
+                ServerSend.SetChips(c.player.id, _setAmount: _setAmount);
+
+            }
+
+        }
+ 
+    }
+    /// <summary>
+    /// Sets player chips using parameter
+    /// </summary>
+    public void SetPlayerChips(int _setAmount)
+    {
+        foreach (Client c in Server.clients.Values)
+        {
+            Debug.Log($"SET AMOUNT TEXT ${_setAmount}");
+            if (c != null && c.player != null)
+            {
+                ServerSend.SetChips(c.player.id, _setAmount: _setAmount);
+
+            }
+
+        }
+
     }
 
     private void Start()

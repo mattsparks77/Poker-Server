@@ -30,7 +30,10 @@ public class WinnerCalculator
         return cards = cards.OrderBy(o => o.rank).ToList(); // sorts cards before adding to dict
     }
 
-
+    /// <summary>
+    /// Only use this to dynamically add cards to players hands as you go
+    /// </summary>
+    /// <param name="h"></param>
     public void CheckHand(Hand h)
     {
 
@@ -195,8 +198,12 @@ public class WinnerCalculator
         return maxPair;
     }
 
-
-    public static Card FindMaxRankInHand(List<Card> cl) // takes in list of cards and returns hgihest ranking card
+    /// <summary>
+    /// takes in list of cards and returns highest ranking card
+    /// </summary>
+    /// <param name="cl"></param>
+    /// <returns></returns>
+    public static Card FindMaxRankInHand(List<Card> cl) 
     {
         int maxrank = 0;
         Card maxCard = null;

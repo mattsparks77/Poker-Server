@@ -17,7 +17,7 @@ public class Player : MonoBehaviour
     public int raiseAmount = 0;
     public int amountInPot = 0;
 
-    public int chipTotal = 1000;
+    public int chipTotal;
 
     
     public Hand hand;

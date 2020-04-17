@@ -6,8 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
+
+
 class GameLogic: MonoBehaviour
 {
+
+
     public static int currentBet = 0;
     public static int amountInPot = 0;
     public static int highestPlayerAmountInPot = 0;
@@ -31,6 +35,7 @@ class GameLogic: MonoBehaviour
     public static int deckIndex = 0;
 
     public static bool roundStarted = false;
+    public static bool isFirstTimePlaying = true;
 
 
     public static void InitializePlayers()
@@ -50,6 +55,7 @@ class GameLogic: MonoBehaviour
         InitializePlayers();
         GatherPlayers();
         RemoveNullPlayers();
+        playersLeft = playersInGame.Count;
         
 
     }
@@ -143,7 +149,7 @@ class GameLogic: MonoBehaviour
 
     public static void OnPlayerAction(int id, int tableIndex)
     {
-        //testing purposes
+        //testing purposes for one player
         //if (true)
         //{
         //    ServerSend.PlayerAction(playersInGame[tableIndex]);
@@ -151,7 +157,14 @@ class GameLogic: MonoBehaviour
         //    ServerSend.PokerState();
         //    return;
         //}
+        if (currentTurnIndex == tableIndex)
+        {
+            ServerSend.PlayerAction(playersInGame[tableIndex]); // sends player action to all other clients if its their turn.
+            //ServerSend.PlayerAction(Server.clients[id].player); // this one works but gets player from clients list instead of in game
+            IncrementPlayerTurn();
 
+
+        }
         // checks if theres only one player left
         if (playersLeft <= 1)
         {
@@ -166,6 +179,7 @@ class GameLogic: MonoBehaviour
             if (dealCounter == 3)
             {
                 CalculateWinner();
+                dealCounter++;
                 ResetPlayerActions();
             }
             else if (dealCounter == 2)
@@ -201,14 +215,14 @@ class GameLogic: MonoBehaviour
         }
 
         //incorrect fix
-        if (currentTurnIndex == tableIndex)
-        {
-            ServerSend.PlayerAction(playersInGame[tableIndex]); // sends player action to all other clients if its their turn.
-            //ServerSend.PlayerAction(Server.clients[id].player); // this one works but gets player from clients list instead of in game
-            IncrementPlayerTurn();
+        //if (currentTurnIndex == tableIndex)
+        //{
+        //    ServerSend.PlayerAction(playersInGame[tableIndex]); // sends player action to all other clients if its their turn.
+        //    //ServerSend.PlayerAction(Server.clients[id].player); // this one works but gets player from clients list instead of in game
+        //    IncrementPlayerTurn();
 
 
-        }
+        //}
         //ServerSend.PokerState();
 
 
@@ -239,6 +253,11 @@ class GameLogic: MonoBehaviour
 
     public static void StartRound()
     {
+        if (isFirstTimePlaying)
+        {
+            NetworkManager.instance.SetPlayerChips(1000);
+            isFirstTimePlaying = false;
+        }
         currentBet = 0;
         amountInPot = 0;
         //also need to add a check here for 2 or more players in game/ numplayersInGame. 
@@ -285,18 +304,104 @@ class GameLogic: MonoBehaviour
 
     public static void CalculateWinner()
     {
-
-        //Do winner calculations for chips and adding chips. SetChips packet made.
-        foreach (Player p in playersInGame)
+        if (playersLeft <= 1)
         {
-            List<Card> allCards = new List<Card>();
-            allCards.AddRange(p.cards);
-            allCards.AddRange(communityCards);
-            p.hand = new Hand(allCards);
-            p.hand.CalculateRanks();
-            p.hand.handInfo.PrintRanks();
-            p.hand.PrintCards(allCards);
+            foreach (Player p in playersInGame)
+            {
+                if (p.isPlayingHand)
+                {
+                    Server.clients[p.id].player.chipTotal += amountInPot;
+                    ServerSend.SetChips(p.id, _addAmount: amountInPot);
+
+                    NewRound();
+                    return;
+
+                }
+            }
         }
+        Debug.Log($"[COMMUNITY] Rank: {communityCards[0].rank.ToString()} , Suit: {communityCards[0].suit.ToString()}\n ");
+        List<ApplicationUser> users = new List<ApplicationUser>();
+        Room room = new Room
+        {
+            numUsers = playersLeft,
+            RoomName = "Calculating Winner..",
+            CardsOnTable = new List<string[]>
+            {
+                new string[]{communityCards[0].stringRank, communityCards[0].stringSuit },
+                new string[]{communityCards[1].stringRank, communityCards[1].stringSuit },
+                new string[]{communityCards[2].stringRank, communityCards[2].stringSuit },
+                new string[]{communityCards[3].stringRank, communityCards[3].stringSuit },
+                new string[]{communityCards[4].stringRank, communityCards[4].stringSuit }
+            }
+        };
+
+        for (int i = 0; i < playersInGame.Count; i++)
+        {
+            if (playersInGame[i].isPlayingHand)
+            {
+                ApplicationUser user = new ApplicationUser
+                {
+                    player = playersInGame[i],
+                    Name = playersInGame[i].username,
+                    PlayerCards = new List<string[]>
+                    {
+                        new string[]{playersInGame[i].cards[0].stringRank,playersInGame[i].cards[0].stringSuit },
+                        new string[]{playersInGame[i].cards[1].stringRank,playersInGame[i].cards[1].stringSuit },
+                    },
+                    Chips = 0
+                };
+                users.Add(user);
+                
+            }
+        }
+
+        room.Chair0 = users[0];
+        room.Chair1 = users[1];
+        //room.Chair2 = users[2];
+        //room.Chair3 = users[3];
+        //room.Chair4 = users[4];
+        //room.Chair5 = users[3];
+        //room.Chair6 = users[3];
+        //room.Chair7 = users[7];
+        //room.Chair8 = users[8];
+        //room.Chair9 = users[9];
+
+        room.PotOfChair0 = users[0].player.amountInPot;
+        room.PotOfChair1 = users[1].player.amountInPot;
+        //room.PotOfChair2 = users[2].player.amountInPot;
+        //room.PotOfChair3 = users[3].player.amountInPot;
+        //room.PotOfChair4 = users[4].player.amountInPot;
+        //room.PotOfChair5 = users[5].player.amountInPot;
+        //room.PotOfChair6 = users[6].player.amountInPot;
+        //room.PotOfChair7 = users[7].player.amountInPot;
+        //room.PotOfChair8 = users[8].player.amountInPot;
+        //room.PotOfChair9 = users[9].player.amountInPot;
+        var result = room.SpreadMoneyToWinners();
+        Debug.Log($"WINNER is {result[0].Winners[0].Name} with {result[0].RankName} for ${result[0].PotAmount}");
+
+        foreach (var user in users)
+        {
+           // user.player.chipTotal += user.Chips;
+            Server.clients[user.player.id].player.chipTotal += user.Chips;
+            ServerSend.SetChips(user.player.id, _addAmount: user.Chips);
+        }
+
+
+
+
+        ////Do winner calculations for chips and adding chips. SetChips packet made.
+        //foreach (Player p in playersInGame)
+        //{
+        //    List<Card> allCards = new List<Card>();
+        //    allCards.AddRange(p.cards);
+        //    allCards.AddRange(communityCards);
+        //    p.hand = new Hand(allCards);
+        //    p.hand.CalculateRanks();
+        
+        //    p.hand.handInfo.PrintRanks();
+        //    p.hand.PrintCards(allCards);
+        //    allCards.Clear();
+        //}
         NewRound();
     }
 
@@ -337,7 +442,10 @@ class GameLogic: MonoBehaviour
             ServerSend.SetChips(playersInGame[bigIndex].id, _subtractAmount: bigBlind, _isBlinds: true);
 
             playersInGame[smallIndex].amountInPot = smallBlind;
+            playersInGame[smallIndex].chipTotal -= smallBlind;
             playersInGame[bigIndex].amountInPot = bigBlind;
+            playersInGame[bigIndex].chipTotal -= bigBlind;
+
             currentBet = bigBlind;
             amountInPot += bigBlind + smallBlind;
         }

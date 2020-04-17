@@ -5,7 +5,10 @@ using System;
 
 public enum HAND_RANK{ highCard, pairs, twoPairs, triples, straight, flush, fullHouse, quads, straightFlush, royalFlush };
 
+public class TieBreakers
+{
 
+}
 public class PlayerCardRanks
 {
     public Dictionary<Suit, List<Card>> SuitTotals;
@@ -14,6 +17,8 @@ public class PlayerCardRanks
     public SortedDictionary<HAND_RANK, List<List<Card>>> MyRank;
     public List<int> cardInHandValues;
 
+    public int highestRank;
+    public List<Card> tieBreaker;
 
     public List<Card> hand;
 
@@ -27,6 +32,12 @@ public class PlayerCardRanks
         MyRank = new SortedDictionary<HAND_RANK, List<List<Card>>>();
 
         InitializeDictionaryCardLists();
+    }
+
+
+    public void GetHighestRank()
+    {
+
     }
 
 

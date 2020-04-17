@@ -70,7 +70,7 @@ public class Hand
     public void CalculateRanks()
     {
         SortCards();
-
+        Debug.Log($"Find Pairs: { WinnerCalculator.FindPairs(handInfo)}");
         WinnerCalculator.FindPairs(handInfo);
         WinnerCalculator.FindTwoPairs(handInfo);
         WinnerCalculator.FindTriples(handInfo);

@@ -12,20 +12,27 @@ public enum Rank
 
 public enum Suit
 {
-    CLUB,
-    DIAMOND,
-    HEART,
-    SPADE
+    Spade,
+    Heart,
+    Diamond,
+    Club,
 }
 public class Card
 {
     public Rank rank;
     public Suit suit;
+    public string stringRank;
+    public string stringSuit;
 
     public Card(Suit newSuit, Rank newRank)
     {
         suit = newSuit;
         rank = newRank;
+        stringSuit = suit.ToString();
+        int _rank = (int)rank;
+        stringRank = _rank.ToString();
     }
+
+
 }
 
