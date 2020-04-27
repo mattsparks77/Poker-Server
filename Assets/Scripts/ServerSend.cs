@@ -90,11 +90,12 @@ public class ServerSend
     /// <summary>Tells a client to spawn a player.</summary>
     /// <param name="_toClient">The client that should spawn the player.</param>
     /// <param name="_player">The player to spawn.</param>
-    public static void SpawnPlayer(int _toClient, Player _player)
+    public static void SpawnPlayer(int _toClient, Player _player, int _prefabId)
     {
         using (Packet _packet = new Packet((int)ServerPackets.spawnPlayer))
         {
             _packet.Write(_player.id);
+            _packet.Write(_prefabId);
             _packet.Write(_player.username);
             _packet.Write(_player.transform.position);
             _packet.Write(_player.transform.rotation);
@@ -163,7 +164,7 @@ public class ServerSend
         }
     }
 
-    public static void SetChips(int _id, int _setAmount = 0, int _subtractAmount = 0, int _addAmount = 0, bool _isBlinds = false)
+    public static void SetChips(int _id, int _setAmount = 0, int _subtractAmount = 0, int _addAmount = 0, bool _isBlinds = false, bool _isWinner = false, string winningCards = "")
     {
         using (Packet _packet = new Packet((int)ServerPackets.setChips))
         {
@@ -172,7 +173,8 @@ public class ServerSend
             _packet.Write(_subtractAmount);
             _packet.Write(_addAmount);
             _packet.Write(_isBlinds);
-
+            _packet.Write(_isWinner);
+            _packet.Write(winningCards);
 
             SendTCPDataToAll(_packet);
         }
@@ -234,13 +236,20 @@ public class ServerSend
         using (Packet _packet = new Packet((int)ServerPackets.pokerState))
         {
             _packet.Write(GameLogic.currentBet);
-            _packet.Write(GameLogic.amountInPot);
+            _packet.Write(GameLogic.totalInPot);
             _packet.Write(GameLogic.currentTurnIndex);
             _packet.Write(GameLogic.playersInGame[GameLogic.currentTurnIndex].id);
 
             _packet.Write(GameLogic.highestPlayerAmountInPot);
+            _packet.Write(GameLogic.roundStarted);
+            _packet.Write(GameLogic.roundOver);
 
+            _packet.Write(GameLogic.smallBlindIndex);
+            _packet.Write(GameLogic.bigBlindIndex);
 
+            //_packet.Write(winningCards);
+
+            Debug.Log($"[Poker State] Current Turn Index: {GameLogic.currentTurnIndex}");
 
             //_packet.Write(_player.isFolding);
             //_packet.Write(_player.isCheckCalling);

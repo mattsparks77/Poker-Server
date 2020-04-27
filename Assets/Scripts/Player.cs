@@ -8,7 +8,7 @@ public class Player : MonoBehaviour
     public string username;
     public int tableIndex = -1;
 
-    public bool isPlayingHand;
+    public bool isPlayingHand = true;
 
     public bool completedActionThisTurn = false;
     public bool isFolding;

@@ -210,11 +210,11 @@ public class Client
 
     /// <summary>Sends the client into the game and informs other clients of the new player.</summary>
     /// <param name="_playerName">The username of the new player.</param>
-    public void SendIntoGame(string _playerName)
+    public void SendIntoGame(string _playerName, int _prefabId)
     {
-        player = NetworkManager.instance.InstantiatePlayer();
+        player = NetworkManager.instance.InstantiatePlayer(_prefabId);
         player.Initialize(id, _playerName);
-
+        GameLogic.totalPlayers.Add(player);
         // Send all players to the new player
         foreach (Client _client in Server.clients.Values)
         {
@@ -222,7 +222,7 @@ public class Client
             {
                 if (_client.id != id)
                 {
-                    ServerSend.SpawnPlayer(id, _client.player);
+                    ServerSend.SpawnPlayer(id, _client.player, _prefabId);
                 }
             }
         }
@@ -232,7 +232,7 @@ public class Client
         {
             if (_client.player != null)
             {
-                ServerSend.SpawnPlayer(_client.id, player);
+                ServerSend.SpawnPlayer(_client.id, player, _prefabId);
             }
         }
 

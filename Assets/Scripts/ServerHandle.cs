@@ -8,13 +8,14 @@ public class ServerHandle
     {
         int _clientIdCheck = _packet.ReadInt();
         string _username = _packet.ReadString();
+        int _prefabId = _packet.ReadInt();
 
         Debug.Log($"{Server.clients[_fromClient].tcp.socket.Client.RemoteEndPoint} connected successfully and is now player {_fromClient}.");
         if (_fromClient != _clientIdCheck)
         {
             Debug.Log($"Player \"{_username}\" (ID: {_fromClient}) has assumed the wrong client ID ({_clientIdCheck})!");
         }
-        Server.clients[_fromClient].SendIntoGame(_username);
+        Server.clients[_fromClient].SendIntoGame(_username, _prefabId);
         GameLogic.OnGameBeingPlayed();
         //GameLogic.playersInGame.Add(Server.clients[_clientIdCheck].player);
     }
@@ -45,7 +46,7 @@ public class ServerHandle
 
         if (_start)
         {
-            GameLogic.StartRound();
+            GameLogic.StartFirstGamePlayed();
         }
 
     }
@@ -54,21 +55,7 @@ public class ServerHandle
     {
         int _id = _packet.ReadInt();
         int _tableIndex = _packet.ReadInt();
-        
-        //If clients removes himself from the table then -1 is sent and client is removed from playersInGameList.
-        //if (_tableIndex == -1)
-        //{
-        //    Debug.Log("Removing player?");
-        //    Server.clients[_id].player.tableIndex = -1;
-        //    GameLogic.playersInGame.Remove(Server.clients[_id].player);
-        //    GameLogic.numPlayersAtTable -= 1;
 
-        //    return;
-
-        //}
-        // Adds player into the playersInGameList and sets player to have the selected index.
-        //if (Server.clients[_id].player == null) { return; }
-            
         Server.clients[_id].player.tableIndex = _tableIndex;
         //GameLogic.playersInGame[_tableIndex] = Server.clients[_fromClient].player;
         //GameLogic.playersInGame[_tableIndex].tableIndex = _tableIndex;
@@ -101,15 +88,19 @@ public class ServerHandle
         {
             int amountToCall = 0;
             amountToCall = GameLogic.highestPlayerAmountInPot - Server.clients[_fromClient].player.amountInPot;
-
+            if (amountToCall >= 0)
+            {
+                Server.clients[_fromClient].player.SubtractChips(amountToCall);
+                Server.clients[_fromClient].player.amountInPot += amountToCall;
+                GameLogic.totalInPot += amountToCall;
+            }
             //if (GameLogic.currentBet != 0)
             //{
             //    amountToCall = GameLogic.highestPlayerAmountInPot - Server.clients[_fromClient].player.amountInPot;
             //}
     
-            Server.clients[_fromClient].player.SubtractChips(amountToCall);
-            Server.clients[_fromClient].player.amountInPot += amountToCall;
-            GameLogic.amountInPot += amountToCall;
+    
+            
 
 
         }
@@ -118,8 +109,16 @@ public class ServerHandle
             Debug.Log($"Raise Amount: {raiseAmount}");
             Server.clients[_fromClient].player.SubtractChips(raiseAmount);
             Server.clients[_fromClient].player.amountInPot += raiseAmount;
-           
-            GameLogic.amountInPot += raiseAmount;
+
+            //resets player actions since now everyone has to make an action after someone else raises.
+            foreach (Player p in GameLogic.playersInGame)
+            {
+                if (p.amountInPot > 0 && p.chipTotal <= 0 && p.id != _id)
+                {
+                    p.completedActionThisTurn = false;
+                }
+            }
+            GameLogic.totalInPot += raiseAmount;
             GameLogic.highestPlayerAmountInPot = Server.clients[_fromClient].player.amountInPot;
             GameLogic.currentBet = GameLogic.highestPlayerAmountInPot;
         }

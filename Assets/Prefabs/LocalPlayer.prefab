@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7845024806360594417}
   - component: {fileID: 8083382281003045130}
   - component: {fileID: 8617244222406117194}
-  - component: {fileID: 5509401330050714644}
+  - component: {fileID: 6967992025106156535}
   m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
@@ -80,8 +80,8 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!136 &5509401330050714644
-CapsuleCollider:
+--- !u!65 &6967992025106156535
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -90,10 +90,9 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  serializedVersion: 2
+  m_Size: {x: 0.5123242, y: 1.5508463, z: 0.6671454}
+  m_Center: {x: 0.022304654, y: -0.22457683, z: 0.010432497}
 --- !u!1 &3221369208999183997
 GameObject:
   m_ObjectHideFlags: 0
@@ -183,7 +182,7 @@ Transform:
   m_GameObject: {fileID: 4052908526979608746}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 0.3, z: 1}
   m_Children:
   - {fileID: 7845024806360594417}
   - {fileID: 644924782316101239}
@@ -224,10 +223,12 @@ MonoBehaviour:
   username: 
   tableIndex: -1
   isPlayingHand: 0
+  completedActionThisTurn: 0
   isFolding: 0
   isCheckCalling: 0
   isRaising: 0
   raiseAmount: 0
+  amountInPot: 0
   chipTotal: 1000
   controller: {fileID: 4391630389002627005}
   shootOrigin: {fileID: 0}

@@ -33,7 +33,6 @@ public class Server
 
         udpListener = new UdpClient(Port);
         udpListener.BeginReceive(UDPReceiveCallback, null);
-        GameLogic.InitializePlayers();
         Debug.Log($"Server started on port {Port}.");
     }
 

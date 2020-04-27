@@ -20,6 +20,7 @@ ScriptsOnlyBuild:
     UnityEngine.UI.dll:
     - UnityEngine.EventSystems.EventSystem
     - UnityEngine.EventSystems.StandaloneInputModule
+    - UnityEngine.UI.Button
     - UnityEngine.UI.CanvasScaler
     - UnityEngine.UI.GraphicRaycaster
     - UnityEngine.UI.Image
@@ -58,27 +59,29 @@ ScriptsOnlyBuild:
     - Class: 108
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 11190}
+      Script: {instanceID: 11196}
     - Class: 114
-      Script: {instanceID: 11290}
+      Script: {instanceID: 11298}
     - Class: 114
-      Script: {instanceID: 11398}
+      Script: {instanceID: 11406}
     - Class: 114
-      Script: {instanceID: 11446}
+      Script: {instanceID: 11454}
     - Class: 114
-      Script: {instanceID: 11686}
+      Script: {instanceID: 11694}
     - Class: 114
-      Script: {instanceID: 11962}
+      Script: {instanceID: 11970}
     - Class: 114
-      Script: {instanceID: 12436}
+      Script: {instanceID: 12448}
     - Class: 114
-      Script: {instanceID: 12532}
+      Script: {instanceID: 12492}
     - Class: 114
-      Script: {instanceID: 12706}
+      Script: {instanceID: 12544}
     - Class: 114
-      Script: {instanceID: 13074}
+      Script: {instanceID: 12718}
     - Class: 114
-      Script: {instanceID: 13544}
+      Script: {instanceID: 13094}
+    - Class: 114
+      Script: {instanceID: 13564}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -266,7 +269,7 @@ ScriptsOnlyBuild:
     className: AspectRatioFitter
   - hash:
       serializedVersion: 2
-      Hash: 5d94c8607bd34cb6cdab58fcb660a23f
+      Hash: 1b3fcca8c84a7983b232af8a198e3031
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetworkManager
@@ -524,6 +527,12 @@ ScriptsOnlyBuild:
     className: GameLogic
   - hash:
       serializedVersion: 2
+      Hash: 3442454c5f37ed6edff7af159bc62f02
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Room
+  - hash:
+      serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: com.unity.multiplayer-hlapi.Runtime.dll
     namespaceName: UnityEngine.Networking
@@ -696,12 +705,6 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
-  - hash:
-      serializedVersion: 2
-      Hash: 3442454c5f37ed6edff7af159bc62f02
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: Room
   platform: 19
   scenePathNames:
   - Assets/Scenes/Game.unity

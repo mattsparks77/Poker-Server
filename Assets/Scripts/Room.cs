@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class Room : MonoBehaviour
+public class Room
 {
     public static string[] suits = { "Club", "Diamond", "Heart", "Spade" };
     public string RoomName { get; set; }

@@ -7,9 +7,12 @@ public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager instance;
 
-    public GameObject playerPrefab;
+    public GameObject[] playerPrefabs = new GameObject[4];
     public Text _setText;
+    public Text _setBigBlind;
+    public Text _setSmallBlind;
     public int _setAmount { get { return int.Parse(_setText.text); } set { _setAmount = int.Parse(_setText.text); } }
+    public Text _setId;
 
     private void Awake()
     {
@@ -23,37 +26,62 @@ public class NetworkManager : MonoBehaviour
             Destroy(this);
         }
     }
+
     /// <summary>
     /// Sets player chips using the text input field
     /// </summary>
-    public void SetPlayerChips()
+    public void SetBigSmallBlinds()
     {
-        foreach (Client c in Server.clients.Values)
-        {
-            Debug.Log($"SET AMOUNT TEXT ${_setAmount}");
-            if (c != null && c.player != null)
-            {
-                ServerSend.SetChips(c.player.id, _setAmount: _setAmount);
+        GameLogic.smallBlind = int.Parse(_setSmallBlind.text);
+        GameLogic.bigBlind = int.Parse(_setBigBlind.text);
+       
+    }
 
-            }
+    public void StartFirstGame()
+    {
+        GameLogic.StartFirstGamePlayed();
+    }
+
+
+    /// <summary>
+    /// Sets player chips using the text input field
+    /// </summary>
+    public void SetSpecificPlayerChips()
+    {
+        if (_setId.text == null) { return; }
+        int id = int.Parse(_setId.text);
+        if (GameLogic.totalPlayers[id] != null)
+        {
+            ServerSend.SetChips(id, _setAmount: _setAmount);
 
         }
- 
+      
+    }
+
+    public void SetPlayerChips()
+    {
+        foreach (Player p in GameLogic.totalPlayers)
+        {
+            if (p != null)
+            {
+                ServerSend.SetChips(p.id, _setAmount: _setAmount);
+                p.chipTotal = _setAmount;
+            }
+        }
+
     }
     /// <summary>
     /// Sets player chips using parameter
     /// </summary>
     public void SetPlayerChips(int _setAmount)
     {
-        foreach (Client c in Server.clients.Values)
+        foreach (Player p in GameLogic.totalPlayers)
         {
-            Debug.Log($"SET AMOUNT TEXT ${_setAmount}");
-            if (c != null && c.player != null)
+            if (p != null)
             {
-                ServerSend.SetChips(c.player.id, _setAmount: _setAmount);
-
+                ServerSend.SetChips(p.id, _setAmount: _setAmount);
+                p.chipTotal = _setAmount;
             }
-
         }
 
     }
@@ -73,14 +101,8 @@ public class NetworkManager : MonoBehaviour
 
     public IEnumerator NewRound(float delay)
     {
-        ServerSend.RoundReset();
-        GameLogic.ResetTable();
-        GameLogic.dealerIndex++;
-        if (GameLogic.dealerIndex > GameLogic.playersInGame.Count)
-        {
-            GameLogic.dealerIndex = 0;
-        }
         yield return new WaitForSeconds(delay);
+        GameLogic.NewRound();
     }
 
     private void OnApplicationQuit()
@@ -88,8 +110,9 @@ public class NetworkManager : MonoBehaviour
         Server.Stop();
     }
 
-    public Player InstantiatePlayer()
+    public Player InstantiatePlayer(int _prefabId)
     {
-        return Instantiate(playerPrefab, new Vector3(0f, 0.5f, 0f), Quaternion.identity).GetComponent<Player>();
+
+        return Instantiate(playerPrefabs[_prefabId], new Vector3(0f, 0.5f, 0f), Quaternion.identity).GetComponent<Player>();
     }
 }
