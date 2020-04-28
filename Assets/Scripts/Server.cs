@@ -131,6 +131,7 @@ public class Server
             { (int)ClientPackets.playerTablePosition, ServerHandle.PlayerTablePosition},
             { (int)ClientPackets.sendStartRound, ServerHandle.StartRound},
             { (int)ClientPackets.playerMovement, ServerHandle.PlayerMovement },
+            { (int)ClientPackets.playerPause, ServerHandle.PlayerPause },
             //{ (int)ClientPackets.playerShoot, ServerHandle.PlayerShoot }
         };
         Debug.Log("Initialized packets.");

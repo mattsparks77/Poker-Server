@@ -51,6 +51,28 @@ public class ServerHandle
 
     }
 
+    public static void PlayerPause(int _fromClient, Packet _packet) // update later for receiving player table seat indexes
+    {
+        bool isPaused = _packet.ReadBool();
+        GameLogic.isPaused = isPaused;
+        if (!isPaused)
+        {
+  
+            NetworkManager.instance.StartNewRoundWithDelay();
+        }
+
+        //only allows one pause per round
+        //if (GameLogic.numTimesPaused >= 1)
+        //{
+        //    return;
+        //}
+        ServerSend.PlayerPause();
+
+
+    }
+
+
+
     public static void PlayerTablePosition(int _fromClient, Packet _packet)
     {
         int _id = _packet.ReadInt();

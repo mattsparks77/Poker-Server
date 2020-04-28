@@ -231,6 +231,23 @@ public class ServerSend
         }
     }
 
+    public static void PlayerPause()
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.playerPause))
+        {
+            _packet.Write(GameLogic.isPaused);
+            SendTCPDataToAll(_packet);
+        }
+    }
+
+    public static void RoundOver()
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.roundOver))
+        {
+            SendTCPDataToAll(_packet);
+        }
+    }
+
     public static void PokerState()
     {
         using (Packet _packet = new Packet((int)ServerPackets.pokerState))

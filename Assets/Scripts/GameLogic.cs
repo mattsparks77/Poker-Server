@@ -11,7 +11,9 @@ using UnityEngine;
 class GameLogic: MonoBehaviour
 {
 
-    private static float roundDelay = 2f;
+    private static float roundDelay = 5f;
+    public static int countdownTimer = 5;
+
     public static int startingChips = 2000;
 
     public static int currentBet = 0;
@@ -40,6 +42,9 @@ class GameLogic: MonoBehaviour
     public static bool roundStarted = false;
     public static bool isFirstTimePlaying = true;
     public static bool roundOver = false;
+    public static bool isPaused = false;
+
+    public static int numTimesPaused = 0;
 
 
     //public static void InitializePlayers()
@@ -53,6 +58,10 @@ class GameLogic: MonoBehaviour
     public static void ResetTable()
     {
         roundOver = false;
+        isPaused = false;
+        numTimesPaused = 0;
+        countdownTimer = 5;
+
         RemovePlayersWithoutChips();
 
         ResetPlayerAmountsInPot();
@@ -62,7 +71,6 @@ class GameLogic: MonoBehaviour
         IncrementBigSmallBlindIndex();
         currentTurnIndex = Increment(bigBlindIndex);
 
-        //SubtractBigSmallBlinds();
 
         currentBet = bigBlind;
         totalInPot = bigBlind + smallBlind;
@@ -108,10 +116,8 @@ class GameLogic: MonoBehaviour
     public static void IncrementBigSmallBlindIndex()
     {
         dealerIndex = Increment(dealerIndex);
-        //dealerIndex = smallBlindIndex;
         smallBlindIndex = Increment(smallBlindIndex);
         bigBlindIndex = Increment(bigBlindIndex);
-        
     }
 
 
@@ -416,8 +422,8 @@ class GameLogic: MonoBehaviour
                 {
                     Server.clients[p.id].player.chipTotal += totalInPot;
                     ServerSend.SetChips(p.id, _addAmount: totalInPot, _isWinner: true);
-
-                    NetworkManager.instance.StartNewRoundWithDelay(roundDelay);
+                    ServerSend.RoundOver();
+                    NetworkManager.instance.StartNewRoundWithDelay();
                     return;
 
                 }
@@ -548,8 +554,8 @@ class GameLogic: MonoBehaviour
             
         }
 
-
-        NetworkManager.instance.StartNewRoundWithDelay(roundDelay);
+        ServerSend.RoundOver();
+        NetworkManager.instance.StartNewRoundWithDelay();
 
     }
 

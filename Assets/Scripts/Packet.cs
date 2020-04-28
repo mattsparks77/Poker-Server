@@ -20,6 +20,8 @@ public enum ServerPackets
     playerTablePosition,
     setChips,
     roundReset,
+    roundOver,
+    playerPause,
 }
 
 /// <summary>Sent from client to server.</summary>
@@ -30,6 +32,7 @@ public enum ClientPackets
     playerAction,
     playerTablePosition,
     playerMovement,
+    playerPause,
 }
 
 public class Packet : IDisposable

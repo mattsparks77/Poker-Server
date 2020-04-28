@@ -94,15 +94,23 @@ public class NetworkManager : MonoBehaviour
         Server.Start(9, 26950);
     }
 
-    public void StartNewRoundWithDelay(float delay)
+    public void StartNewRoundWithDelay()
     {
-        StartCoroutine(NewRound(delay));
+        StartCoroutine(NewRound());
     }
 
-    public IEnumerator NewRound(float delay)
+    public IEnumerator NewRound()
     {
-        yield return new WaitForSeconds(delay);
-        GameLogic.NewRound();
+        while (!GameLogic.isPaused && GameLogic.countdownTimer >= 0)
+        {
+            yield return new WaitForSeconds(1f);
+            GameLogic.countdownTimer--;
+        }
+        if (!GameLogic.isPaused && GameLogic.countdownTimer <= 0)
+        {
+            GameLogic.NewRound();
+        }
+        
     }
 
     private void OnApplicationQuit()
