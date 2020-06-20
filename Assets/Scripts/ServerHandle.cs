@@ -15,8 +15,10 @@ public class ServerHandle
         {
             Debug.Log($"Player \"{_username}\" (ID: {_fromClient}) has assumed the wrong client ID ({_clientIdCheck})!");
         }
+        //GameLogic.AddPlayerToGame(_fromClient);
         Server.clients[_fromClient].SendIntoGame(_username, _prefabId);
         GameLogic.OnGameBeingPlayed();
+       
         //GameLogic.playersInGame.Add(Server.clients[_clientIdCheck].player);
     }
 

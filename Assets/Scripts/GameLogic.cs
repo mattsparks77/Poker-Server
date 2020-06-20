@@ -39,10 +39,13 @@ class GameLogic: MonoBehaviour
     public static int dealCounter = 0;
     public static int deckIndex = 0;
 
+
+    //change to using an enum for different gamestates.
     public static bool roundStarted = false;
     public static bool isFirstTimePlaying = true;
     public static bool roundOver = false;
     public static bool isPaused = false;
+    public static bool sendingBlindIndexes = false;
 
     public static int numTimesPaused = 0;
 
@@ -61,7 +64,7 @@ class GameLogic: MonoBehaviour
         isPaused = false;
         numTimesPaused = 0;
         countdownTimer = 5;
-
+        communityCards.Clear();
         RemovePlayersWithoutChips();
 
         ResetPlayerAmountsInPot();
@@ -70,13 +73,18 @@ class GameLogic: MonoBehaviour
         dealCounter = 0;
         IncrementBigSmallBlindIndex();
         currentTurnIndex = Increment(bigBlindIndex);
-
+        sendingBlindIndexes = true;
 
         currentBet = bigBlind;
         totalInPot = bigBlind + smallBlind;
         highestPlayerAmountInPot = bigBlind;
         playersLeft = playersInGame.Count;
 
+    }
+
+    public static void AssignPlayerIndex()
+    {
+        
     }
 
     public static void ResetPlayerAmountsInPot()
@@ -199,7 +207,7 @@ class GameLogic: MonoBehaviour
         // if its not players turn dont accept input or if they have already completed an action. Action gets set to false for all other players if someone raises.
         if (currentTurnIndex != tableIndex)//|| playersInGame[currentTurnIndex].completedActionThisTurn)
         {
-            Debug.Log($"[OnPlayerAction] Current turn: {currentTurnIndex}");
+            Debug.Log($"Not player's turn or move has already been registered.");
             return;
         }       
         
@@ -214,7 +222,6 @@ class GameLogic: MonoBehaviour
         // checks if theres only one player left
         if (playersLeft <= 1)
         {
-            ServerSend.PokerState();
             CalculateWinner();
             //ServerSend.PlayerAction(playersInGame[tableIndex]); // sends player action to all other clients.
             return;
@@ -227,32 +234,40 @@ class GameLogic: MonoBehaviour
                 dealCounter++;
                 highestPlayerAmountInPot = 0;
                 currentBet = 0;
-                ResetPlayerActions();
+                ResetRoundPlayerActions();
+
+
             }
             else if (dealCounter == 2)
             {
                 CardDealer.River();
                 dealCounter++;
-                ResetPlayerActions();
+                ResetRoundPlayerActions();
                 currentBet = 0;
                 highestPlayerAmountInPot = 0;
+                currentTurnIndex = smallBlindIndex;
+                ServerSend.RoundOver();
             }
             else if (dealCounter == 1)
             {
                 CardDealer.Turn();
                 dealCounter++;
-                ResetPlayerActions();
+                ResetRoundPlayerActions();
                 currentBet = 0;
                 highestPlayerAmountInPot = 0;
+                currentTurnIndex = smallBlindIndex;
+                ServerSend.RoundOver();
 
             }
             else if (dealCounter == 0)
             {
                 CardDealer.Flop();
                 dealCounter++;
-                ResetPlayerActions();
+                ResetRoundPlayerActions();
                 currentBet = 0;
                 highestPlayerAmountInPot = 0;
+                currentTurnIndex = smallBlindIndex;
+                ServerSend.RoundOver();
             }
         }
 
@@ -261,7 +276,7 @@ class GameLogic: MonoBehaviour
 
     }
 
-    public static void ResetPlayerActions()
+    public static void ResetRoundPlayerActions()
     {
         foreach (Player p in totalPlayers)
         {
@@ -269,15 +284,24 @@ class GameLogic: MonoBehaviour
             if (p != null)
             {
                 p.completedActionThisTurn = false;
-        
+                p.isCheckCalling = false;
+                p.isRaising = false;
 
             }
         }
-        foreach (Player p in playersInGame)
+    }
+
+    public static void ResetPlayerActions()
+    {
+        foreach (Player p in totalPlayers)
         {
+
             if (p != null)
             {
                 p.completedActionThisTurn = false;
+                p.isFolding = false;
+                p.isCheckCalling = false;
+                p.isRaising = false;
 
             }
         }
@@ -336,7 +360,7 @@ class GameLogic: MonoBehaviour
         bigBlindIndex = 1;
 
         currentTurnIndex = Increment(bigBlindIndex);
-
+        sendingBlindIndexes = true;
  
 
         currentBet = bigBlind;
@@ -393,9 +417,11 @@ class GameLogic: MonoBehaviour
         Deck.Shuffle();
         CardDealer.DealOpeningCards();
         ServerSend.PokerState();
+        sendingBlindIndexes = false;
+
     }
 
-
+    
     public static void NewRound()
     {
 
@@ -407,6 +433,7 @@ class GameLogic: MonoBehaviour
         Deck.Shuffle();
         CardDealer.DealOpeningCards();
         ServerSend.PokerState();
+        sendingBlindIndexes = false;
     }
 
 
@@ -422,14 +449,19 @@ class GameLogic: MonoBehaviour
                 {
                     Server.clients[p.id].player.chipTotal += totalInPot;
                     ServerSend.SetChips(p.id, _addAmount: totalInPot, _isWinner: true);
-                    ServerSend.RoundOver();
+                    ServerSend.RoundOver(isGameOver: true);
+                    roundOver = true;
                     NetworkManager.instance.StartNewRoundWithDelay();
                     return;
 
                 }
             }
         }
-        Debug.Log($"[COMMUNITY] Rank: {communityCards[0].rank.ToString()} , Suit: {communityCards[0].suit.ToString()}\n ");
+        Debug.Log($"[COMMUNITY]1 Rank: {communityCards[0].rank.ToString()} , Suit: {communityCards[0].suit.ToString()}\n ");
+        Debug.Log($"[COMMUNITY]2 Rank: {communityCards[1].rank.ToString()} , Suit: {communityCards[1].suit.ToString()}\n ");
+        Debug.Log($"[COMMUNITY]3 Rank: {communityCards[2].rank.ToString()} , Suit: {communityCards[2].suit.ToString()}\n ");
+        Debug.Log($"[COMMUNITY]4 Rank: {communityCards[3].rank.ToString()} , Suit: {communityCards[3].suit.ToString()}\n ");
+        Debug.Log($"[COMMUNITY]5 Rank: {communityCards[4].rank.ToString()} , Suit: {communityCards[4].suit.ToString()}\n ");
         List<ApplicationUser> users = new List<ApplicationUser>() { null, null, null, null, null, null, null, null, null, null};
         Room room = new Room
         {
@@ -444,7 +476,9 @@ class GameLogic: MonoBehaviour
                 new string[]{communityCards[4].stringRank, communityCards[4].stringSuit }
             }
         };
-
+        string ts = $"Card 1: {communityCards[0].stringRank}, {communityCards[0].stringSuit}\nCard 2: {communityCards[1].stringRank}, {communityCards[1].stringSuit}\n"+ 
+            $"Card 3: { communityCards[2].stringRank}, { communityCards[2].stringSuit}\nCard 4: {communityCards[3].stringRank}, {communityCards[3].stringSuit}\nCard 5: {communityCards[4].stringRank}, {communityCards[4].stringSuit}\n";
+        Debug.Log(ts);
         for (int i = 0; i < playersInGame.Count; i++)
         {
             if (playersInGame[i].isPlayingHand)
@@ -538,7 +572,27 @@ class GameLogic: MonoBehaviour
         var result = room.SpreadMoneyToWinners();
         // send this info to client! Need to change result[0] to check for other winners and then send to clients so they know who else won.
         //if (result)
-        Debug.Log($"WINNER is {result[0].Winners[0].Name} with {result[0].RankName} for ${result[0].WinningCards[0][1]}");
+        for (int i = 0; i < result.Count; i++)
+        {
+            string dataString = "";
+            string cards = "";
+            foreach (string[] card in result[i].WinningCards)
+            {
+                foreach (string s in card)
+                {
+                    cards += s;
+                }
+  
+                //Debug.Log($"Result[{i}] {dataString} \nRank Name {result[i].RankName}\nWinning Cards: {card[0].ToString()}");
+
+            }
+            Debug.Log($"Result[{i}] {dataString} \nRank Name {result[i].RankName}\nWinning Cards: {cards}");
+
+            // Debug.Log($"Result[{i}] {dataString} \nRank Name {result[i].RankName}\nWinning Cards: {result[i].WinningCards[0].ToString()}");
+
+        }
+
+        //Debug.Log($"WINNER is {result[0].Winners[0].Name} with {result[0].RankName} for ${result[0].WinningCards[0][1]}");
 
         foreach (var user in users)
         {
@@ -549,12 +603,21 @@ class GameLogic: MonoBehaviour
                 continue;
             }
             Server.clients[user.player.id].player.chipTotal += user.Chips;
-            ServerSend.SetChips(user.player.id, _addAmount: user.Chips, _isWinner: true, winningCards: result[0].RankName + ": " + result[0].WinningCards[0][0] + ", " + result[0].WinningCards[0][1]);
+       
+            ServerSend.SetChips(user.player.id, _addAmount: user.Chips, _isWinner: true, winningCards: result[0].RankName);
+            if (result.Count >= 2)
+            {
+                Debug.Log($"Result[1]. RankName = {result[1].RankName}");
+            }
+            if (result.Count >= 3)
+            {
+                Debug.Log($"Result[2]. RankName = {result[2].RankName}");
+            }
 
-            
         }
-
-        ServerSend.RoundOver();
+        roundOver = true;
+        ServerSend.RoundOver(isGameOver: true);
+        
         NetworkManager.instance.StartNewRoundWithDelay();
 
     }

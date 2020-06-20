@@ -96,9 +96,11 @@ public class ServerSend
         {
             _packet.Write(_player.id);
             _packet.Write(_prefabId);
+            _packet.Write(_player.tableIndex);
             _packet.Write(_player.username);
             _packet.Write(_player.transform.position);
             _packet.Write(_player.transform.rotation);
+           
 
             SendTCPData(_toClient, _packet);
         }
@@ -141,10 +143,11 @@ public class ServerSend
     }
 
 
-    public static void RoundReset()
+    public static void RoundReset(bool isGameOver = false)
     {
         using (Packet _packet = new Packet((int)ServerPackets.roundReset))
         {
+     
             SendTCPDataToAll(_packet);
         }
     }
@@ -240,10 +243,11 @@ public class ServerSend
         }
     }
 
-    public static void RoundOver()
+    public static void RoundOver(bool isGameOver = false)
     {
         using (Packet _packet = new Packet((int)ServerPackets.roundOver))
         {
+            _packet.Write(isGameOver);
             SendTCPDataToAll(_packet);
         }
     }
@@ -260,7 +264,7 @@ public class ServerSend
             _packet.Write(GameLogic.highestPlayerAmountInPot);
             _packet.Write(GameLogic.roundStarted);
             _packet.Write(GameLogic.roundOver);
-
+            _packet.Write(GameLogic.sendingBlindIndexes);
             _packet.Write(GameLogic.smallBlindIndex);
             _packet.Write(GameLogic.bigBlindIndex);
 

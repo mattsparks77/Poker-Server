@@ -14,24 +14,30 @@ public class CardDealer
         {
             if (p != null)
             {
-                Debug.Log($"Card 1: User: {p.username} , TablePosition: {p.tableIndex}");
                 Card _card = Deck.NextCard();
+                Server.clients[p.id].player.cards[0] = _card;
+
                 p.cards[0] = _card; //adds first card to players hand on server
                 ServerSend.SendCard(_card, p.id); //sends card to players hand on client
+                Debug.Log($"Card {_card.rank.ToString()}- {_card.suit.ToString()}: User: {p.username} , TablePosition: {p.tableIndex}");
+
             }
-           
+
         }
         foreach (Player p in GameLogic.playersInGame) //Server.clients.Values
         {
             if (p != null)
             {
-                Debug.Log($"Card 2: User: {p.username} , TablePosition: {p.tableIndex}");
+                //Debug.Log($"Card 2: User: {p.username} , TablePosition: {p.tableIndex}");
 
                 Card _card = Deck.NextCard();
+                Server.clients[p.id].player.cards[1] = _card;
                 p.cards[1] = _card;//adds second card to players hand on server
                 ServerSend.SendCard(_card, p.id); //sends second card to players hand on client
+                Debug.Log($"Card {_card.rank.ToString()}- {_card.suit.ToString()}: User: {p.username} , TablePosition: {p.tableIndex}");
+
             }
-         
+
         }
     }
 
@@ -42,6 +48,9 @@ public class CardDealer
         Card _card1 = Deck.NextCard();
         Card _card2 = Deck.NextCard();
         Card _card3 = Deck.NextCard();
+        Debug.Log($"[Community Card] {_card1.rank.ToString()}- {_card1.suit.ToString()}");
+        Debug.Log($"[Community Card] {_card2.rank.ToString()}- {_card2.suit.ToString()}");
+        Debug.Log($"[Community Card] {_card3.rank.ToString()}- {_card3.suit.ToString()}");
 
         //adds cards to servers community card pool
         GameLogic.communityCards.Add(_card1);
@@ -59,6 +68,7 @@ public class CardDealer
     {
         Deck.BurnCard(); // discards one card from the pile
         Card _card1 = Deck.NextCard();
+        Debug.Log($"[River] {_card1.rank.ToString()}- {_card1.suit.ToString()}");
 
         //adds cards to servers community card pool
         GameLogic.communityCards.Add(_card1);
@@ -71,6 +81,7 @@ public class CardDealer
     {
         Deck.BurnCard(); // discards one card from the pile
         Card _card1 = Deck.NextCard();
+        Debug.Log($"[Turn] {_card1.rank.ToString()}- {_card1.suit.ToString()}");
 
         //adds cards to servers community card pool
         GameLogic.communityCards.Add(_card1);

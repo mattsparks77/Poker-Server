@@ -86,8 +86,6 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 128
       Script: {instanceID: 0}
-    - Class: 136
-      Script: {instanceID: 0}
     - Class: 143
       Script: {instanceID: 0}
     - Class: 157
@@ -269,7 +267,7 @@ ScriptsOnlyBuild:
     className: AspectRatioFitter
   - hash:
       serializedVersion: 2
-      Hash: 1b3fcca8c84a7983b232af8a198e3031
+      Hash: 160434437d5391f9d500719eff646efe
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetworkManager
@@ -525,12 +523,6 @@ ScriptsOnlyBuild:
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameLogic
-  - hash:
-      serializedVersion: 2
-      Hash: 3442454c5f37ed6edff7af159bc62f02
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: Room
   - hash:
       serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f

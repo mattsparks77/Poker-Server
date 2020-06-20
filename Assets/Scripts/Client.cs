@@ -257,5 +257,10 @@ public class Client
         udp.Disconnect();
 
         ServerSend.PlayerDisconnected(id);
+        // Resets table if no more players are playing.
+        if (Server.clients.Count <= 0)
+        {
+            GameLogic.ResetTable();
+        }
     }
 }
